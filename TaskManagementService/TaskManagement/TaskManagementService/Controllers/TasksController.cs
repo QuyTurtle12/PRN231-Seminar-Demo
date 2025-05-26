@@ -1,7 +1,6 @@
-﻿using MediatR;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using TaskManagementServiceRepo.Queries;
+﻿using Microsoft.AspNetCore.Mvc;
+using Polly.Bulkhead;
+using TaskManagementServiceRepo.Interfaces;
 
 namespace TaskManagementService.Controllers
 {
@@ -9,21 +8,29 @@ namespace TaskManagementService.Controllers
     [ApiController]
     public class TasksController : ControllerBase
     {
-        private readonly IMediator _mediator;
+        private readonly ITaskRepo _taskRepo;
+        private readonly AsyncBulkheadPolicy _bulkheadPolicy;
 
-        public TasksController(IMediator mediator)
+        public TasksController(ITaskRepo taskRepo, AsyncBulkheadPolicy bulkheadPolicy)
         {
-            _mediator = mediator;
+            _taskRepo = taskRepo;   
+            _bulkheadPolicy = bulkheadPolicy;
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllTasks(CancellationToken cancellationToken)
+        public async Task<IActionResult> GetAllTasksWithUserName(CancellationToken cancellationToken)
         {
             try
             {
-                var query = new GetAllTaskQuery.GetAllTaskQueryRequest();
-                var result = await _mediator.Send(query, cancellationToken);
+                var result = await _bulkheadPolicy.ExecuteAsync(
+                    async ct => await _taskRepo.GetAllTasksWithUserNameASync(ct),
+                    cancellationToken);
+
                 return Ok(result);
+            }
+            catch (BulkheadRejectedException)
+            {
+                return StatusCode(429, "Bulkhead rejected: Too many concurrent requests.");
             }
             catch (Exception ex)
             {

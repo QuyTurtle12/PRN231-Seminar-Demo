@@ -13,7 +13,7 @@ namespace TaskManagementServiceDAO
             _context = new TaskManagementContext();
         }
 
-        public async Task<List<TaskManagementServiceBO.Task>> GetAllTasks(CancellationToken cancellationToken)
+        public async Task<List<TaskManagementServiceBO.Task>> GetAllTasks(CancellationToken cancellationToken = default)
         {
             return await _context.Tasks
                 .Include(t => t.Status)
