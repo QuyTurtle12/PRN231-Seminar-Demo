@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Polly.Bulkhead;
 using TaskManagementServiceRepo.Interfaces;
 
@@ -6,36 +7,32 @@ namespace TaskManagementService.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class TasksController : ControllerBase
+    public class UsersController : ControllerBase
     {
-        private readonly ITaskRepo _taskRepo;
+        private readonly IUserRepo _userRepo;
         private readonly AsyncBulkheadPolicy _bulkheadPolicy;
 
-        public TasksController(ITaskRepo taskRepo, [FromKeyedServices("TasksBulkhead")] AsyncBulkheadPolicy bulkheadPolicy)
+        public UsersController(IUserRepo userRepo, [FromKeyedServices("UsersBulkhead")] AsyncBulkheadPolicy bulkheadPolicy)
         {
-            _taskRepo = taskRepo;   
+            _userRepo = userRepo;
             _bulkheadPolicy = bulkheadPolicy;
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllTasksWithUserName(CancellationToken cancellationToken)
+        public async Task<IActionResult> GetAllUsers(CancellationToken cancellationToken)
         {
             try
             {
                 var result = await _bulkheadPolicy.ExecuteAsync(
-                    async ct => await _taskRepo.GetAllTasksWithUserNameASync(ct),
+                    async ct => await _userRepo.GetAllUsers(ct),
                     cancellationToken);
-
                 return Ok(result);
-            }
-            catch (BulkheadRejectedException)
-            {
-                return StatusCode(429, "Bulkhead rejected: Too many concurrent requests.");
             }
             catch (Exception ex)
             {
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+
     }
 }

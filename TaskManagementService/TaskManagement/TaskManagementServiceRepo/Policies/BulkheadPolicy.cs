@@ -6,21 +6,20 @@ namespace TaskManagementServiceRepo.Policies
 {
     public class BulkheadPolicy
     {
-        public static AsyncBulkheadPolicy CreateBulkheadPolicy(IConfiguration configuration)
+        public static AsyncBulkheadPolicy CreateBulkheadPolicy(IConfiguration configuration, string policyName)
         {
-            // Get values from configuration with fallbacks
-            var maxParallelTasks = configuration.GetValue<int>("BulkheadPolicy:MaxParallelization", 3);
-            var maxQueuedTasks = configuration.GetValue<int>("BulkheadPolicy:MaxQueuingActions", 5);
-            var timeoutSeconds = configuration.GetValue<int>("BulkheadPolicy:TimeoutInSeconds", 30);
+            var maxParallel = configuration.GetValue<int>($"BulkheadPolicies:{policyName}:MaxParallelization");
+            var maxQueued = configuration.GetValue<int>($"BulkheadPolicies:{policyName}:MaxQueuingActions");
+            var timeoutSeconds = configuration.GetValue<int>($"BulkheadPolicies:{policyName}:TimeoutInSeconds");
 
             return Policy.BulkheadAsync(
-                maxParallelization: maxParallelTasks,
-                maxQueuingActions: maxQueuedTasks,
+                maxParallelization: maxParallel,
+                maxQueuingActions: maxQueued,
                 onBulkheadRejectedAsync: context =>
                 {
-                    Console.WriteLine($"Bulkhead rejected at {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss.fff}. " +
-                                    $"Max parallel tasks: {maxParallelTasks}, " +
-                                    $"Max queued tasks: {maxQueuedTasks}");
+                    Console.WriteLine($"Bulkhead [{policyName}] rejected at {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss.fff}. " +
+                                    $"Max parallel: {maxParallel}, " +
+                                    $"Max queued: {maxQueued}");
                     return Task.CompletedTask;
                 });
         }

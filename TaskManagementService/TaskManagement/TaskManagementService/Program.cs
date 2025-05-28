@@ -19,10 +19,18 @@ builder.Services.AddScoped<IUserDAO, UserDAO>();
 builder.Services.AddScoped<ITaskRepo, TaskRepo>();
 builder.Services.AddScoped<IUserRepo, UserRepo>();
 
-// Register the BulkheadPolicy as a singleton service
-builder.Services.AddSingleton(sp =>
-    TaskManagementServiceRepo.Policies.BulkheadPolicy.CreateBulkheadPolicy(
-        sp.GetRequiredService<IConfiguration>()));
+//// Register the BulkheadPolicy as a singleton service
+//builder.Services.AddSingleton(sp =>
+//    TaskManagementServiceRepo.Policies.BulkheadPolicy.CreateBulkheadPolicy(
+//        sp.GetRequiredService<IConfiguration>()));
+
+// Register separate bulkhead policies for each controller
+builder.Services.AddKeyedSingleton<AsyncBulkheadPolicy>("TasksBulkhead", (sp, _) =>
+    TaskManagementServiceRepo.Policies.BulkheadPolicy.CreateBulkheadPolicy(sp.GetRequiredService<IConfiguration>(), "Tasks"));
+
+builder.Services.AddKeyedSingleton<AsyncBulkheadPolicy>("UsersBulkhead", (sp, _) =>
+    TaskManagementServiceRepo.Policies.BulkheadPolicy.CreateBulkheadPolicy(sp.GetRequiredService<IConfiguration>(), "Users"));
+
 
 var app = builder.Build();
 

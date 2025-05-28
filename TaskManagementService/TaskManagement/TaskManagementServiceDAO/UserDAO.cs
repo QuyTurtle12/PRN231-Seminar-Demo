@@ -1,4 +1,5 @@
-﻿using TaskManagementServiceBO;
+﻿using Microsoft.EntityFrameworkCore;
+using TaskManagementServiceBO;
 using TaskManagementServiceDAO.Interfaces;
 
 namespace TaskManagementServiceDAO
@@ -15,6 +16,11 @@ namespace TaskManagementServiceDAO
         public async Task<User?> GetUserById(int userId, CancellationToken cancellationToken = default)
         {
             return await _context.Users.FindAsync(userId, cancellationToken);
+        }
+
+        public async Task<List<User>> GetAllUsers(CancellationToken cancellationToken = default)
+        {
+            return await _context.Users.ToListAsync(cancellationToken);
         }
     }
 }
