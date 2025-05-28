@@ -1,4 +1,5 @@
 ﻿using TaskManagementServiceBO;
+using TaskManagementServiceDAO.DTOs;
 using TaskManagementServiceDAO.Interfaces;
 using TaskManagementServiceRepo.Interfaces;
 
@@ -23,5 +24,19 @@ namespace TaskManagementServiceRepo.Repositories
                 User user => user.Name ?? $"User {userId} has no name"
             };
         }
+
+        public async Task<IList<UserDTO>> GetAllUsers(CancellationToken cancellationToken = default)
+        {
+            IList<User> users = await _userDAO.GetAllUsers(cancellationToken);
+
+            IList<UserDTO> result = users.Select(user => new UserDTO
+            {
+                Name = user.Name ?? $"User {user.Id} has no name",
+                Email = user.Email ?? $"User {user.Id} has no email"
+            }).ToList();
+
+            return result;
+        }
+
     }
 }
