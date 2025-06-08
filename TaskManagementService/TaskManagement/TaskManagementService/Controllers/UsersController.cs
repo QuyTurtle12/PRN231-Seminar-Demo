@@ -10,12 +10,10 @@ namespace TaskManagementService.Controllers
     public class UsersController : ControllerBase
     {
         private readonly IUserRepo _userRepo;
-        private readonly AsyncBulkheadPolicy _bulkheadPolicy;
 
-        public UsersController(IUserRepo userRepo, [FromKeyedServices("UsersBulkhead")] AsyncBulkheadPolicy bulkheadPolicy)
+        public UsersController(IUserRepo userRepo)
         {
             _userRepo = userRepo;
-            _bulkheadPolicy = bulkheadPolicy;
         }
 
         [HttpGet]
@@ -23,9 +21,7 @@ namespace TaskManagementService.Controllers
         {
             try
             {
-                var result = await _bulkheadPolicy.ExecuteAsync(
-                    async ct => await _userRepo.GetAllUsers(ct),
-                    cancellationToken);
+                var result = await _userRepo.GetAllUsers(cancellationToken);
                 return Ok(result);
             }
             catch (Exception ex)
