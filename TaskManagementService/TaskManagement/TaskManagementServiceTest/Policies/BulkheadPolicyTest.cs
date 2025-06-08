@@ -11,7 +11,7 @@ namespace TaskManagementServiceTests.Policies
         {
             var inMemorySettings = new Dictionary<string, string?>
         {
-            {"BulkheadPolicies:TestName:MaxParallelization", "1"},
+            {"BulkheadPolicies:TestName:MaxParallelization", "2"},
             {"BulkheadPolicies:TestName:MaxQueuingActions", "1"},
             {"BulkheadPolicies:TestName:TimeoutInSeconds", "10"}
         };
@@ -68,8 +68,8 @@ namespace TaskManagementServiceTests.Policies
             // - 1 task to be queued
             // - 3 tasks to be rejected
             Assert.AreEqual(5, results.Count);
-            Assert.IsTrue(results.Count(r => r.Contains("succeeded")) <= 2);
-            Assert.IsTrue(results.Count(r => r.Contains("rejected")) >= 3);
+            Assert.IsTrue(results.Count(r => r.Contains("succeeded")) <= 3);
+            Assert.IsTrue(results.Count(r => r.Contains("rejected")) >= 2);
         }
     }
 }
