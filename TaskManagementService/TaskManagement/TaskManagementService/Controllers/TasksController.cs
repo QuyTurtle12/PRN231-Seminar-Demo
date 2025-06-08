@@ -9,12 +9,11 @@ namespace TaskManagementService.Controllers
     public class TasksController : ControllerBase
     {
         private readonly ITaskRepo _taskRepo;
-        private readonly AsyncBulkheadPolicy _bulkheadPolicy;
+        
 
-        public TasksController(ITaskRepo taskRepo, [FromKeyedServices("TasksBulkhead")] AsyncBulkheadPolicy bulkheadPolicy)
+        public TasksController(ITaskRepo taskRepo)
         {
             _taskRepo = taskRepo;   
-            _bulkheadPolicy = bulkheadPolicy;
         }
 
         [HttpGet]
@@ -22,15 +21,8 @@ namespace TaskManagementService.Controllers
         {
             try
             {
-                var result = await _bulkheadPolicy.ExecuteAsync(
-                    async ct => await _taskRepo.GetAllTasksWithUserNameASync(ct),
-                    cancellationToken);
-
+                var result = await _taskRepo.GetAllTasksWithUserNameASync(cancellationToken);
                 return Ok(result);
-            }
-            catch (BulkheadRejectedException)
-            {
-                return StatusCode(429, "Bulkhead rejected: Too many concurrent requests.");
             }
             catch (Exception ex)
             {

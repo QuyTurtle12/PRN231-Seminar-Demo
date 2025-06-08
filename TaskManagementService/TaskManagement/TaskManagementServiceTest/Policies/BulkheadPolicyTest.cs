@@ -9,11 +9,11 @@ namespace TaskManagementServiceTests.Policies
     {
         private IConfiguration CreateTestConfiguration()
         {
-            var inMemorySettings = new Dictionary<string, string>
+            var inMemorySettings = new Dictionary<string, string?>
         {
-            {"BulkheadPolicy:MaxParallelization", "1"},
-            {"BulkheadPolicy:MaxQueuingActions", "1"},
-            {"BulkheadPolicy:TimeoutInSeconds", "10"}
+            {"BulkheadPolicies:TestName:MaxParallelization", "1"},
+            {"BulkheadPolicies:TestName:MaxQueuingActions", "1"},
+            {"BulkheadPolicies:TestName:TimeoutInSeconds", "10"}
         };
 
             return new ConfigurationBuilder()
@@ -25,7 +25,7 @@ namespace TaskManagementServiceTests.Policies
         public async Task DemonstrateBulkheadRejection()
         {
             // Arrange
-            var policy = BulkheadPolicy.CreateBulkheadPolicy(CreateTestConfiguration());
+            var policy = BulkheadPolicy.CreateBulkheadPolicy(CreateTestConfiguration(), "TestName");
             var results = new ConcurrentBag<string>();
             var tasks = new List<Task>();
 
