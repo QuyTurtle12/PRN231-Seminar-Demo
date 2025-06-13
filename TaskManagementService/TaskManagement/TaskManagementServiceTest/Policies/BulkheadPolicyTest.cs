@@ -30,7 +30,7 @@ namespace TaskManagementServiceTests.Policies
             var tasks = new List<Task>();
 
             // Act
-            // Create 5 concurrent tasks (more than our limit of 1 executing + 1 queued)
+            // Create 5 concurrent tasks (more than our limit of 2 executing + 1 queued)
             for (int i = 0; i < 5; i++)
             {
                 var taskNumber = i;
@@ -64,9 +64,9 @@ namespace TaskManagementServiceTests.Policies
             }
 
             // We expect:
-            // - 1 task to execute immediately
-            // - 1 task to be queued
-            // - 3 tasks to be rejected
+            // - 5 task to execute immediately
+            // - 3 task to be queued
+            // - 2 tasks to be rejected
             Assert.AreEqual(5, results.Count);
             Assert.IsTrue(results.Count(r => r.Contains("succeeded")) <= 3);
             Assert.IsTrue(results.Count(r => r.Contains("rejected")) >= 2);
